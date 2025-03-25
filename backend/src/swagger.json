@@ -1,0 +1,416 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Triply Booking Engine API",
+    "version": "1.0.0",
+    "description": "Complete API for Triply Booking System with tours, users, bookings, and payment processing"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3001/api",
+      "description": "Development server"
+    }
+  ],
+  "tags": [
+    {"name": "Authentication", "description": "User login/registration"},
+    {"name": "Tours", "description": "Tour management"},
+    {"name": "Bookings", "description": "Booking operations"},
+    {"name": "Payments", "description": "Payment processing"},
+    {"name": "Users", "description": "User profile management"},
+    {"name": "Admin", "description": "Admin-only operations"}
+  ],
+  "paths": {
+    "/auth/register": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Register new user",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "User login",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserLogin"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tours": {
+      "get": {
+        "tags": ["Tours"],
+        "summary": "Get all tours",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {"type": "integer", "default": 10}
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {"type": "integer", "default": 1}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of tours",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Tour"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Tours"],
+        "security": [{"BearerAuth": []}],
+        "summary": "Create new tour (Admin)",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TourCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Tour created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Tour"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tours/{id}": {
+      "get": {
+        "tags": ["Tours"],
+        "summary": "Get tour details",
+        "parameters": [{
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {"type": "string"}
+        }],
+        "responses": {
+          "200": {
+            "description": "Tour details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Tour"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/bookings": {
+      "get": {
+        "tags": ["Bookings"],
+        "security": [{"BearerAuth": []}],
+        "summary": "Get user bookings",
+        "responses": {
+          "200": {
+            "description": "User bookings",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Booking"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Bookings"],
+        "security": [{"BearerAuth": []}],
+        "summary": "Create booking",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BookingCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Booking created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Booking"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/bookings/{id}": {
+      "get": {
+        "tags": ["Bookings"],
+        "security": [{"BearerAuth": []}],
+        "summary": "Get booking details",
+        "parameters": [{
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {"type": "string"}
+        }],
+        "responses": {
+          "200": {
+            "description": "Booking details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Booking"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Bookings"],
+        "security": [{"BearerAuth": []}],
+        "summary": "Cancel booking",
+        "parameters": [{
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {"type": "string"}
+        }],
+        "responses": {
+          "204": {
+            "description": "Booking canceled"
+          }
+        }
+      }
+    },
+    "/payments/create-session": {
+      "post": {
+        "tags": ["Payments"],
+        "security": [{"BearerAuth": []}],
+        "summary": "Create payment session",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaymentSessionCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Payment session",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentSession"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payments/webhook": {
+      "post": {
+        "tags": ["Payments"],
+        "summary": "Stripe webhook handler",
+        "responses": {
+          "200": {
+            "description": "Webhook processed"
+          }
+        }
+      }
+    },
+
+    "/users/me": {
+      "get": {
+        "tags": ["Users"],
+        "security": [{"BearerAuth": []}],
+        "summary": "Get current user",
+        "responses": {
+          "200": {
+            "description": "User profile",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "AuthResponse": {
+        "type": "object",
+        "properties": {
+          "token": {"type": "string"},
+          "user": {"$ref": "#/components/schemas/User"}
+        }
+      },
+      "UserCreate": {
+        "type": "object",
+        "required": ["email", "password"],
+        "properties": {
+          "email": {"type": "string", "format": "email"},
+          "password": {"type": "string", "minLength": 6}
+        }
+      },
+      "UserLogin": {
+        "type": "object",
+        "required": ["email", "password"],
+        "properties": {
+          "email": {"type": "string", "format": "email"},
+          "password": {"type": "string"}
+        }
+      },
+      "Tour": {
+        "type": "object",
+        "properties": {
+          "id": {"type": "string"},
+          "name": {"type": "string"},
+          "description": {"type": "string"},
+          "duration": {"type": "string"},
+          "price": {"type": "number"},
+          "images": {
+            "type": "array",
+            "items": {"type": "string"}
+          },
+          "createdAt": {"type": "string", "format": "date-time"}
+        }
+      },
+      "TourCreate": {
+        "type": "object",
+        "required": ["name", "price"],
+        "properties": {
+          "name": {"type": "string"},
+          "description": {"type": "string"},
+          "duration": {"type": "string"},
+          "price": {"type": "number"},
+          "images": {
+            "type": "array",
+            "items": {"type": "string"}
+          }
+        }
+      },
+      "Booking": {
+        "type": "object",
+        "properties": {
+          "id": {"type": "string"},
+          "user": {"$ref": "#/components/schemas/User"},
+          "tour": {"$ref": "#/components/schemas/Tour"},
+          "price": {"type": "number"},
+          "status": {
+            "type": "string",
+            "enum": ["pending", "confirmed", "cancelled"]
+          },
+          "createdAt": {"type": "string", "format": "date-time"}
+        }
+      },
+      "BookingCreate": {
+        "type": "object",
+        "required": ["tourId"],
+        "properties": {
+          "tourId": {"type": "string"},
+          "date": {"type": "string", "format": "date"}
+        }
+      },
+      "PaymentSession": {
+        "type": "object",
+        "properties": {
+          "id": {"type": "string"},
+          "url": {"type": "string"}
+        }
+      },
+      "PaymentSessionCreate": {
+        "type": "object",
+        "required": ["bookingId"],
+        "properties": {
+          "bookingId": {"type": "string"}
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {"type": "string"},
+          "email": {"type": "string"},
+          "createdAt": {"type": "string", "format": "date-time"}
+        }
+      }
+    }
+  }
+}

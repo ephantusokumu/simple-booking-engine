@@ -1,0 +1,118 @@
+#version: "3.8"
+#
+#services:
+#  # PostgreSQL database
+#  db:
+#    image: postgres:13
+#    container_name: trply_db
+#    environment:
+#      POSTGRES_DB: ${DB_NAME}
+#      POSTGRES_USER: ${DB_USER}
+#      POSTGRES_PASSWORD: ${DB_PASSWORD}
+#    ports:
+#      - "5432:5432"
+#    volumes:
+#      - postgres_data:/var/lib/postgresql/data
+#
+#  # Backend service
+#  backend:
+#    build: ./backend
+#    container_name: trply_backend
+#    environment:
+#      DB_NAME: ${DB_NAME}
+#      DB_USER: ${DB_USER}
+#      DB_PASSWORD: ${DB_PASSWORD}
+#      DB_HOST: db
+#      JWT_SECRET: ${JWT_SECRET}
+#      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+#      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+#      CLIENT_URL: ${CLIENT_URL}
+#      FIXER_API_KEY: ${FIXER_API_KEY}
+#      OPEN_EXCHANGE_RATES_APP_ID: ${OPEN_EXCHANGE_RATES_APP_ID}
+#    ports:
+#      - "3001:3001"
+#    depends_on:
+#      - db
+#
+#  # Frontend service
+#  frontend:
+#    build: ./frontend
+#    container_name: trply_frontend
+#    environment:
+#      REACT_APP_API_URL: ${REACT_APP_API_URL}
+#      REACT_APP_STRIPE_PUBLISHABLE_KEY: ${REACT_APP_STRIPE_PUBLISHABLE_KEY}
+#    ports:
+#      - "3000:3000"
+#    depends_on:
+#      - backend
+#
+## Volumes for persistent data
+#volumes:
+#  postgres_data:
+version: "3.8"
+
+services:
+  db:
+    image: postgres:13
+    container_name: trply_db
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  migrations:
+    build: ./backend
+    container_name: trply_migrations
+    environment:
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: db
+    depends_on:
+      - db
+    command: >
+      sh -c "sleep 5 &&
+      npx sequelize-cli db:drop && 
+      npx sequelize-cli db:create && 
+      npx sequelize-cli db:migrate && 
+      npx sequelize-cli db:seed:all"
+    volumes:
+      - ./backend:/app
+    working_dir: /app
+
+  backend:
+    build: ./backend
+    container_name: trply_backend
+    environment:
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: db
+      JWT_SECRET: ${JWT_SECRET}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+      CLIENT_URL: ${CLIENT_URL}
+      FIXER_API_KEY: ${FIXER_API_KEY}
+      OPEN_EXCHANGE_RATES_APP_ID: ${OPEN_EXCHANGE_RATES_APP_ID}
+    ports:
+      - "3001:3001"
+    depends_on:
+      - migrations
+
+  frontend:
+    build: ./frontend
+    container_name: trply_frontend
+    environment:
+      REACT_APP_API_URL: ${REACT_APP_API_URL}
+      REACT_APP_STRIPE_PUBLISHABLE_KEY: ${REACT_APP_STRIPE_PUBLISHABLE_KEY}
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
