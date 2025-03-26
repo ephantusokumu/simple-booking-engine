@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import "../tours.css"; // Import the CSS file
+import "../tours.css";
 
 const TourList = ({ setSelectedTour }) => {
     const [tours, setTours] = useState([]);
@@ -9,31 +9,32 @@ const TourList = ({ setSelectedTour }) => {
     const [password, setPassword] = useState("");
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [error, setError] = useState("");
-    const [showAuthForm, setShowAuthForm] = useState(false); // Track visibility of auth form
-    const [selectedTourId, setSelectedTourId] = useState(null); // Track selected tour for booking
-    const [userEmail, setUserEmail] = useState(""); // Store logged-in user's email for salutation
+    const [showAuthForm, setShowAuthForm] = useState(false);
+    const [selectedTourId, setSelectedTourId] = useState(null);
+    const [userEmail, setUserEmail] = useState("");
     const navigate = useNavigate();
 
     useEffect(() => {
-        // Fetch tours from the backend
         axios
             .get(`${process.env.REACT_APP_API_URL}/tours`)
-            .then((response) => setTours(response.data))
+            .then((response) => {
+                const toursData = Array.isArray(response.data) ? response.data : response.data.data;
+                setTours(toursData);
+            })
             .catch((error) => console.error("Error fetching tours:", error));
 
-        // Check if the user is already logged in
         const token = localStorage.getItem("token");
         if (token) {
             setIsLoggedIn(true);
-            const storedEmail = localStorage.getItem("email"); // Retrieve email from local storage
+            const storedEmail = localStorage.getItem("email");
             if (storedEmail) setUserEmail(storedEmail);
         }
     }, []);
 
     const handleSelectTour = (tour) => {
         if (!isLoggedIn) {
-            setSelectedTourId(tour.id); // Store the selected tour ID
-            setShowAuthForm(true); // Show the login/register form
+            setSelectedTourId(tour.id);
+            setShowAuthForm(true);
         } else {
             setSelectedTour(tour);
             navigate("/payment");
@@ -47,14 +48,14 @@ const TourList = ({ setSelectedTour }) => {
                 email,
                 password,
             });
-            localStorage.setItem("token", response.data.token); // Store the token
-            localStorage.setItem("email", email); // Store the email for salutation
+            localStorage.setItem("token", response.data.token);
+            localStorage.setItem("email", email);
             setIsLoggedIn(true);
-            setUserEmail(email); // Set the email for display
+            setUserEmail(email);
             setError("");
-            setShowAuthForm(false); // Hide the auth form after registration
+            setShowAuthForm(false);
         } catch (error) {
-            setError(error.response?.data?.error || "Registration failed. Please try again.");
+            setError(error.response?.data?.error || "Registration failed.");
         }
     };
 
@@ -65,25 +66,22 @@ const TourList = ({ setSelectedTour }) => {
                 email,
                 password,
             });
-            localStorage.setItem("token", response.data.token); // Store the token
-            localStorage.setItem("email", email); // Store the email for salutation
+            localStorage.setItem("token", response.data.token);
+            localStorage.setItem("email", email);
             setIsLoggedIn(true);
-            setUserEmail(email); // Set the email for display
+            setUserEmail(email);
             setError("");
-            setShowAuthForm(false); // Hide the auth form after login
+            setShowAuthForm(false);
         } catch (error) {
-            setError(error.response?.data?.error || "Login failed. Please try again.");
+            setError(error.response?.data?.error || "Login failed.");
         }
     };
 
     return (
         <div className="tour-list-container">
-            {/* Salutation for logged-in users */}
             {isLoggedIn && <h2>Welcome, {userEmail}!</h2>}
-
             <h2>Select a Tour Package</h2>
 
-            {/* Registration and Login Form */}
             {showAuthForm && (
                 <div className="auth-form">
                     <h3>Register or Log In</h3>
@@ -113,18 +111,21 @@ const TourList = ({ setSelectedTour }) => {
                 </div>
             )}
 
-            {/* Tours List */}
             <ul className="tours-list">
-                {tours.map((tour) => (
-                    <li key={tour.id} className="tour-item">
-                        <h3>{tour.name}</h3>
-                        <p>{tour.description}</p>
-                        <p>Price: KES. {tour.price}</p>
-                        <button onClick={() => handleSelectTour(tour)}>
-                            {isLoggedIn ? "Proceed" : "Book Now"}
-                        </button>
-                    </li>
-                ))}
+                {Array.isArray(tours) && tours.length > 0 ? (
+                    tours.map((tour) => (
+                        <li key={tour.id} className="tour-item">
+                            <h3>{tour.name}</h3>
+                            <p>{tour.description}</p>
+                            <p>Price: KES. {tour.price}</p>
+                            <button onClick={() => handleSelectTour(tour)}>
+                                {isLoggedIn ? "Proceed" : "Book Now"}
+                            </button>
+                        </li>
+                    ))
+                ) : (
+                    <p>No tours available.</p>
+                )}
             </ul>
         </div>
     );

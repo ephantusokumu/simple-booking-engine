@@ -12,12 +12,12 @@
     }
   ],
   "tags": [
-    {"name": "Authentication", "description": "User login/registration"},
-    {"name": "Tours", "description": "Tour management"},
-    {"name": "Bookings", "description": "Booking operations"},
-    {"name": "Payments", "description": "Payment processing"},
-    {"name": "Users", "description": "User profile management"},
-    {"name": "Admin", "description": "Admin-only operations"}
+    { "name": "Authentication", "description": "User login/registration" },
+    { "name": "Tours", "description": "Tour management" },
+    { "name": "Bookings", "description": "Booking operations" },
+    { "name": "Payments", "description": "Payment processing" },
+    { "name": "Users", "description": "User profile management" },
+    { "name": "Admin", "description": "Admin-only operations-WIP" }
   ],
   "paths": {
     "/auth/register": {
@@ -82,12 +82,12 @@
           {
             "name": "limit",
             "in": "query",
-            "schema": {"type": "integer", "default": 10}
+            "schema": { "type": "integer", "default": 10 }
           },
           {
             "name": "page",
             "in": "query",
-            "schema": {"type": "integer", "default": 1}
+            "schema": { "type": "integer", "default": 1 }
           }
         ],
         "responses": {
@@ -108,7 +108,7 @@
       },
       "post": {
         "tags": ["Tours"],
-        "security": [{"BearerAuth": []}],
+        "security": [{ "BearerAuth": [] }],
         "summary": "Create new tour (Admin)",
         "requestBody": {
           "content": {
@@ -137,12 +137,14 @@
       "get": {
         "tags": ["Tours"],
         "summary": "Get tour details",
-        "parameters": [{
-          "name": "id",
-          "in": "path",
-          "required": true,
-          "schema": {"type": "string"}
-        }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Tour details",
@@ -158,29 +160,9 @@
       }
     },
     "/bookings": {
-      "get": {
-        "tags": ["Bookings"],
-        "security": [{"BearerAuth": []}],
-        "summary": "Get user bookings",
-        "responses": {
-          "200": {
-            "description": "User bookings",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Booking"
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
       "post": {
         "tags": ["Bookings"],
-        "security": [{"BearerAuth": []}],
+        "security": [{ "BearerAuth": [] }],
         "summary": "Create booking",
         "requestBody": {
           "content": {
@@ -201,6 +183,60 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/bookings/all": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "Get all bookings (Admin-only)",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "List of all bookings",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Booking"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "description": "Access denied"
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -208,14 +244,16 @@
     "/bookings/{id}": {
       "get": {
         "tags": ["Bookings"],
-        "security": [{"BearerAuth": []}],
+        "security": [{ "BearerAuth": [] }],
         "summary": "Get booking details",
-        "parameters": [{
-          "name": "id",
-          "in": "path",
-          "required": true,
-          "schema": {"type": "string"}
-        }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Booking details",
@@ -231,14 +269,16 @@
       },
       "delete": {
         "tags": ["Bookings"],
-        "security": [{"BearerAuth": []}],
+        "security": [{ "BearerAuth": [] }],
         "summary": "Cancel booking",
-        "parameters": [{
-          "name": "id",
-          "in": "path",
-          "required": true,
-          "schema": {"type": "string"}
-        }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
         "responses": {
           "204": {
             "description": "Booking canceled"
@@ -249,7 +289,7 @@
     "/payments/create-session": {
       "post": {
         "tags": ["Payments"],
-        "security": [{"BearerAuth": []}],
+        "security": [{ "BearerAuth": [] }],
         "summary": "Create payment session",
         "requestBody": {
           "content": {
@@ -285,11 +325,10 @@
         }
       }
     },
-
     "/users/me": {
       "get": {
         "tags": ["Users"],
-        "security": [{"BearerAuth": []}],
+        "security": [{ "BearerAuth": [] }],
         "summary": "Get current user",
         "responses": {
           "200": {
@@ -318,97 +357,142 @@
       "AuthResponse": {
         "type": "object",
         "properties": {
-          "token": {"type": "string"},
-          "user": {"$ref": "#/components/schemas/User"}
+          "token": { "type": "string" },
+          "user": { "$ref": "#/components/schemas/User" }
         }
       },
       "UserCreate": {
         "type": "object",
         "required": ["email", "password"],
         "properties": {
-          "email": {"type": "string", "format": "email"},
-          "password": {"type": "string", "minLength": 6}
+          "email": { "type": "string", "format": "email" },
+          "password": { "type": "string", "minLength": 6 }
         }
       },
       "UserLogin": {
         "type": "object",
         "required": ["email", "password"],
         "properties": {
-          "email": {"type": "string", "format": "email"},
-          "password": {"type": "string"}
+          "email": { "type": "string", "format": "email" },
+          "password": { "type": "string" }
         }
       },
       "Tour": {
         "type": "object",
         "properties": {
-          "id": {"type": "string"},
-          "name": {"type": "string"},
-          "description": {"type": "string"},
-          "duration": {"type": "string"},
-          "price": {"type": "number"},
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "duration": { "type": "string" },
+          "price": { "type": "number" },
           "images": {
             "type": "array",
-            "items": {"type": "string"}
+            "items": { "type": "string" }
           },
-          "createdAt": {"type": "string", "format": "date-time"}
+          "createdAt": { "type": "string", "format": "date-time" }
         }
       },
       "TourCreate": {
         "type": "object",
         "required": ["name", "price"],
         "properties": {
-          "name": {"type": "string"},
-          "description": {"type": "string"},
-          "duration": {"type": "string"},
-          "price": {"type": "number"},
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The name of the tour (required)"
+          },
+          "description": {
+            "type": "string",
+            "description": "A detailed description of the tour (optional)"
+          },
+          "duration": {
+            "type": "string",
+            "description": "The duration of the tour (e.g., '2 days') (optional)"
+          },
+          "price": {
+            "type": "number",
+            "minimum": 0.01,
+            "description": "The price of the tour (required, must be greater than 0)"
+          },
           "images": {
             "type": "array",
-            "items": {"type": "string"}
+            "items": {
+              "type": "string",
+              "description": "URL of an image associated with the tour"
+            },
+            "description": "An array of image URLs (optional)"
           }
+        },
+        "example": {
+          "name": "Amboseli National Park Tour",
+          "description": "Visit Amboseli National Park, famous for its large elephant herds and views of Mount Kilimanjaro.",
+          "duration": "2 days",
+          "price": 450.0,
+          "images": [
+            "https://example.com/images/amboseli1.jpg",
+            "https://example.com/images/amboseli2.jpg"
+          ]
         }
       },
       "Booking": {
         "type": "object",
         "properties": {
-          "id": {"type": "string"},
-          "user": {"$ref": "#/components/schemas/User"},
-          "tour": {"$ref": "#/components/schemas/Tour"},
-          "price": {"type": "number"},
+          "id": { "type": "string" },
+          "user": { "$ref": "#/components/schemas/User" },
+          "tour": { "$ref": "#/components/schemas/Tour" },
+          "price": { "type": "number" },
           "status": {
             "type": "string",
             "enum": ["pending", "confirmed", "cancelled"]
           },
-          "createdAt": {"type": "string", "format": "date-time"}
+          "createdAt": { "type": "string", "format": "date-time" }
         }
       },
       "BookingCreate": {
         "type": "object",
-        "required": ["tourId"],
+        "required": ["tourId", "amount", "currency"],
         "properties": {
-          "tourId": {"type": "string"},
-          "date": {"type": "string", "format": "date"}
+          "tourId": {
+            "type": "string",
+            "description": "The ID of the tour being booked (required)"
+          },
+          "amount": {
+            "type": "number",
+            "minimum": 0.01,
+            "description": "The total amount for the booking in the specified currency (required)"
+          },
+          "currency": {
+            "type": "string",
+            "enum": ["USD", "EUR", "KES", "GBP"],
+            "description": "The currency of the booking amount (required)"
+          }
+        },
+        "example": {
+          "tourId": "d4e5f6a7-8901-4012-6789-a1b2c3d4e5f6",
+          "amount": 450.0,
+          "currency": "KES"
         }
       },
       "PaymentSession": {
         "type": "object",
         "properties": {
-          "id": {"type": "string"},
-          "url": {"type": "string"}
+          "id": { "type": "string" },
+          "url": { "type": "string" }
         }
       },
       "PaymentSessionCreate": {
         "type": "object",
         "required": ["bookingId"],
         "properties": {
-          "bookingId": {"type": "string"}
+          "bookingId": { "type": "string" }
         }
       },
       "User": {
         "type": "object",
         "properties": {
-          "id": {"type": "string"},
-          "email": {"type": "string"},
-          "createdAt": {"type": "string", "format": "date-time"}
+          "id": { "type": "string" },
+          "email": { "type": "string" },
+          "createdAt": { "type": "string", "format": "date-time" }
         }
       }
     }
